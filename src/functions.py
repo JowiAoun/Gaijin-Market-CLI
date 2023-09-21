@@ -1,18 +1,19 @@
 # --- Imports
 import http # used to make API requests
-import pandas as pd  # used to turn arrays into csv and sorting
 import json  # used to load settings from settings.json
 
 
 # --- Access settings
-stgs = json.load(open('settings_search.json', 'w'))
+stgs = json.load(open('settings_search.json', 'r'))
 
 
 # --- Functions
+@DeprecationWarning("Deprecated function")
 def market_search():
     count = 100
     skip = 0
-
+    
+    #! temporary, store directly into a database instead
     items = {'Item': [], 'Buy': [], 'Sell': [], 'Profit': [], 'ROI': [], 'ID': [], 'Link': []}
 
     #! get from requests.py, make sure to connect only once
@@ -55,7 +56,7 @@ def market_search():
 
         skip += 100
 
-    df = pd.DataFrame(data=items)
-    df_ = df.sort_values('Profit', ascending=False)  # !get from search_settings
+    conn.close()
 
-    df_.to_csv("warthunder-prices-data.csv", index=False, encoding='cp1252', errors='ignore')
+def sell_item():
+    pass
