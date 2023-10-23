@@ -1,24 +1,17 @@
 # --- Imports
-# External
 import click
-# Internal
-import functions as fns
+from functions import get_balance, get_inventory_ids
 
 
-# --- Main function
-#@click.command("Hello")
-#@click.option('--count', default=1, help='Number of greetings.')
-#@click.option('--name', prompt='Your name', help='The person to greet.')
-#def hello(count, name):
-#    """Simple program that greets NAME for a total of COUNT times."""
-#    for x in range(count):
-#        click.secho(f"Hello {name}!", fg='green')
+# --- Commands
+@click.group()
+def main():
+    pass
 
-@click.command("Sell")
-@click.option('--sell', default=1, help='Number of items to sell.')
-def sell(sell):
-    click.secho(f"Let's sell {sell}!", fg='green')
+@main.command()
+def balance():
+    click.echo(f"Balance: ${get_balance()}")
 
-# --- Execution
-if __name__ == '__main__':
-    sell()
+@main.command()
+def inventory():
+    click.echo("Here's the inventory: ...")
