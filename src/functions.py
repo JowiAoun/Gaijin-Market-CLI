@@ -4,11 +4,10 @@ import json  # used to load settings from settings.json
 
 
 # --- Access settings
-stgs = json.load(open('settings_search.json', 'r'))
+stgs = json.load(open('./settings.json', 'r'))
 
 
 # --- Functions
-@DeprecationWarning("Deprecated function")
 def market_search():
     count = 100
     skip = 0
