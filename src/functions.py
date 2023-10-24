@@ -29,7 +29,7 @@ DB = mysql.connector.connect(
 DB_CURSOR = DB.cursor()
 
 
-# --- Requests
+# --- Functions
 def get_balance() -> float:
     """
     Gets the balance of the user.
@@ -48,21 +48,9 @@ def get_balance() -> float:
         print(f"Error: could not get balance.\nStatus: {data['status']}")
         exit()
 
+    conn.close()
+
     return float(data["balance"])/10000
-
-def get_item_data(asset_id) -> Item:
-    # Get data
-    conn = client.HTTPSConnection("market-proxy.gaijin.net")
-    payload = f"action=GetAssetClassInfo&token={GM_TOKEN}&appid=1067&language=en_US&class_name0=__itemdefid&class_value0={asset_id}&class_count=1"
-    headers = {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
-    conn.request("POST", "/assetAPI", payload, headers)
-    res = conn.getresponse()
-    data = json.loads(res.read())
-
-    # Define item object
-    item = Item(asset_id, data["market_name"], data["market_hash_name"])
-
-    return item
 
 def get_inventory_ids() -> dict:
     """
@@ -89,65 +77,59 @@ def get_inventory_ids() -> dict:
     if (data["result"]["success"] != True):
         print(f"Error: could not get inventory IDs.\nStatus: {data['result']['success']}")
         exit()
+
+    conn.close()
     
     return ids_mapping
 
 def get_inventory():
-    #? When making a request, should I instead update an SQL database
-    #? instead of making more and more requests to get current inventory?
+    """
+    Development steps:
+    1. get_inventory_ids()
+    2. Make requests to each item to get item info.
+       - There may be an efficient 1 API call to do all that.
+    """
     pass
 
-def market_search():
+def db_populate_items_static(table_name):
+    """
+    Populates the database's table provided to the function with static data from the Gaijin Market.
+    This should be used lightly as it creates 18 big requests. The data is static, and therefore does
+    not need frequent updating.
+    """
+
     conn = client.HTTPSConnection("market-proxy.gaijin.net") # setup connection
     count = 100
     skip = 0
     
-    #! temporary, store directly into a database instead
-    items = {'Item': [], 'Buy': [], 'Sell': [], 'Profit': [], 'ROI': [], 'ID': [], 'Link': []}
-
     for i in range(STGS['requests']):
-        #! make new item class here
-        payload = f"action=cln_market_search&token={STGS['token']}&appid=1165&skip={skip}&count=100&text=&language=en_US&options=any_sell_orders&appid_filter=1067"
+        # Get data
+        payload = f"action=cln_market_search&token={GM_TOKEN}&appid=1165&skip={skip}&count={count}&text=&language=en_US&options=any_sell_orders&appid_filter=1067"
         headers = {'content-type': "application/x-www-form-urlencoded; charset=UTF-8"}
         conn.request("GET", "/web", payload, headers)
         res = conn.getresponse()
-
         data = json.loads(res.read())
 
+        # Iterate over each item in the request
         for j in range(count):
             try:
+                asset_id = data['response']['assets'][j]["asset_class"][0]["value"]
                 name = data['response']['assets'][j]['name']
                 hash_name = data['response']['assets'][j]['hash_name']
-                price_buy = data['response']['assets'][j]['buy_price'] / 100000000
-                price_sell = data['response']['assets'][j]['price'] / 100000000
+                DB_CURSOR.execute(queries[0], (table_name, asset_id, name, hash_name))
             except:
+                print(f"Error: could not insert market item static data to DB: {asset_id, name, hash_name} at loop index {i*100 + j}")
                 continue
-
-            if ('key' in name) or (price_buy > STGS['buy_max']) or (price_buy == 0) or (price_sell == 0):
-                continue
-
-            profit = (0.85 * price_sell) - price_buy
-            roi = (profit / price_buy) * 100
-
-            if (profit < STGS['profit_min']) or (roi < STGS['roi_min']):
-                continue
-
-            items['Item'].append(name)
-            items['Buy'].append(float(f"{price_buy:.2f}"))
-            items['Sell'].append(float(f"{price_sell:.2f}"))
-            items['Profit'].append(float(f"{profit:.2f}"))
-            items['ROI'].append(str(int(roi)) + "%")
-            items['ID'].append(hash)
-            items['Link'].append("https://trade.gaijin.net/?n=" + str(hash) + "&viewitem=&a=1067")
 
         skip += 100
 
+    DB.commit()
     conn.close()
 
 
-# --- Helpers
-
 #? Next steps:
-#? 1. Put static information into new database table (asset_id, name, hash_name, tags)
+#? DONE - 1. Put static information into new database table (asset_id, name, hash_name)
 #? 2. Link that table to another table containing variable data
 #?    (price_buy, price_sell, quantity_buy, quantity_sell, profit, roi, timestamp)
+#? 3. Add a tags table, link to asset_id from items_static
+#?    (could be populated in db_populate_items_static simultanously)

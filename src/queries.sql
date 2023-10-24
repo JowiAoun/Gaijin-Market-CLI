@@ -1,2 +1,2 @@
 -- # Querry 0
-SELECT * FROM item
+INSERT INTO {%s} (asset_id, name, hash_name) VALUES (%s, %s, %s)
