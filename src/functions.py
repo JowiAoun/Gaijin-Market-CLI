@@ -1,20 +1,34 @@
 # --- Imports
 from http import client # used to make API requests
+from dotenv import load_dotenv # used in loading .env file
+import mysql.connector # connector for MySQL database
 import json  # used to load settings from settings.json
 import os # used in setting environment variables
-from dotenv import load_dotenv # used in loading .env file
 
 
 # --- Setup
 load_dotenv() # load environment variables
+with open('./src/queries.sql', 'r') as file: # read SQL querries
+    sql_content = file.read()
+queries = [query.split('\n', 1)[1].strip() for query in sql_content.split('-- #') if query.strip()]
 
 
 # --- Constants
-TOKEN = os.environ.get("TOKEN") # get token from .env (SECRET)
 STGS = json.load(open('./settings.json', 'r')) # set settings from .json file
+GM_TOKEN = os.environ.get("GM_TOKEN") # get token from .env (SECRET)
+DB_USER_NAME = os.environ.get("DB_USER_NAME")
+DB_USER_PASSWORD = os.environ.get("DB_USER_PASSWORD")
+DB_NAME = "gmcli"
+DB = mysql.connector.connect(
+    host="localhost",
+    user=DB_USER_NAME,
+    passwd=DB_USER_PASSWORD,
+    database=DB_NAME
+)
+DB_CURSOR = DB.cursor()
 
 
-# --- Functions
+# --- Requests
 def get_balance() -> float:
     """
     Gets the balance of the user.
@@ -23,7 +37,7 @@ def get_balance() -> float:
     
     # Get data
     conn = client.HTTPSConnection("wallet.gaijin.net")
-    headers = {'Authorization': f'BEARER {TOKEN}'}
+    headers = {'Authorization': f'BEARER {GM_TOKEN}'}
     conn.request("GET", "/GetBalance", '', headers)
     res = conn.getresponse()
     data = json.loads(res.read())
@@ -45,27 +59,26 @@ def get_inventory_ids() -> dict:
 
     # Get data
     conn = client.HTTPSConnection("market-proxy.gaijin.net")
-    payload = f"action=GetContextContents&token={TOKEN}&appid=1067&contextid=1"
+    payload = f"action=GetContextContents&token={GM_TOKEN}&appid=1067&contextid=1"
     headers = {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     conn.request("POST", "/assetAPI", payload, headers)
     res = conn.getresponse()
     data = json.loads(res.read())
 
     # Create mapping for itemid-classid
-    idsMapping = {}
+    ids_mapping = {}
     for item in data["result"]["assets"]:
-        idsMapping[item["class"][0]["value"]] = item["id"]
+        ids_mapping[item["class"][0]["value"]] = item["id"]
 
     # Check is status is good
     if (data["result"]["success"] != True):
         print(f"Error: could not get inventory IDs.\nStatus: {data['result']['success']}")
         exit()
     
-    return idsMapping
+    return ids_mapping
 
 def get_inventory():
-    #TODO: This is the next step.
-    #? When i'm making a request, should I instead update an SQL database
+    #? When making a request, should I instead update an SQL database
     #? instead of making more and more requests to get current inventory?
     pass
 
@@ -115,3 +128,6 @@ def market_search():
         skip += 100
 
     conn.close()
+
+
+# --- Helpers

@@ -1,6 +1,6 @@
 # --- Imports
 import click
-from functions import get_balance, get_inventory_ids
+from functions import get_balance
 
 
 # --- Commands

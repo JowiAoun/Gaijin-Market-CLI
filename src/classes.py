@@ -6,10 +6,10 @@ class Item:
     Class representing an item from the Gaijin market.
     """
 
-    def __init__(self, name, hash_name, price_buy, price_sell, quantity_buy, quantity_sell) -> None:
+    def __init__(self, asset_id, name, hash_name, price_buy, price_sell, quantity_buy, quantity_sell) -> None:
+        self.asset_id:          int         = asset_id
         self.name:              str         = name
         self.hash_name:         str         = hash_name
-        self.asset_id:          str         = 0 #TODO: get asset_id
         self.price_buy:         float       = price_buy
         self.price_sell:        float       = price_sell
         self.quantity_buy:      int         = quantity_buy
