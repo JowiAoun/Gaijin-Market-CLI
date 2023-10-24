@@ -9,7 +9,7 @@ setup(
     url="https://github.com/JowiAoun/Gaijin-Market-CLI",
     author="Jowi Aoun",
     packages=find_packages(),
-    install_requires=['click'],
+    install_requires=['click', 'mysql.connector', 'python-dotenv'],
     entry_points='''
     [console_scripts]
     gmcli=main:main

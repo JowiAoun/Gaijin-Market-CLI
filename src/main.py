@@ -1,6 +1,6 @@
 # --- Imports
 import click
-from functions import get_balance
+from functions import get_balance, get_item
 
 
 # --- Commands
@@ -11,6 +11,10 @@ def main():
 @main.command()
 def balance():
     click.echo(f"Balance: ${get_balance()}")
+
+@main.command()
+def item():
+    click.echo(get_item(100130))
 
 @main.command()
 def inventory():

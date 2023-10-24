@@ -1,4 +1,5 @@
 # --- Imports
+from classes import Item # class to preserve a market item
 from http import client # used to make API requests
 from dotenv import load_dotenv # used in loading .env file
 import mysql.connector # connector for MySQL database
@@ -48,6 +49,20 @@ def get_balance() -> float:
         exit()
 
     return float(data["balance"])/10000
+
+def get_item_data(asset_id) -> Item:
+    # Get data
+    conn = client.HTTPSConnection("market-proxy.gaijin.net")
+    payload = f"action=GetAssetClassInfo&token={GM_TOKEN}&appid=1067&language=en_US&class_name0=__itemdefid&class_value0={asset_id}&class_count=1"
+    headers = {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+    conn.request("POST", "/assetAPI", payload, headers)
+    res = conn.getresponse()
+    data = json.loads(res.read())
+
+    # Define item object
+    item = Item(asset_id, data["market_name"], data["market_hash_name"])
+
+    return item
 
 def get_inventory_ids() -> dict:
     """
@@ -131,3 +146,8 @@ def market_search():
 
 
 # --- Helpers
+
+#? Next steps:
+#? 1. Put static information into new database table (asset_id, name, hash_name, tags)
+#? 2. Link that table to another table containing variable data
+#?    (price_buy, price_sell, quantity_buy, quantity_sell, profit, roi, timestamp)
