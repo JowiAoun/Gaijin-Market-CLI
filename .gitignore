@@ -1,4 +1,4 @@
-./src/__pycache__
-./src/gmcli.egg-info
+/src/__pycache__
+/src/gmcli.egg-info
 
 .env
