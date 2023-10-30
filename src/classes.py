@@ -17,5 +17,5 @@ class Item:
         self.quantity_sell:     int         = quantity_sell
         self.tags:              dict        = tags
         self.profit:            float       = (0.85 * price_sell) - price_buy
-        self.roi:               float       = (self.profit / price_buy) * 100
+        self.roi:               int         = (self.profit / price_buy) * 100
         self.timestamp:         int         = int(datetime.now().timestamp())

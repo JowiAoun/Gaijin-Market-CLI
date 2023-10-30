@@ -43,15 +43,49 @@ def get_balance() -> float:
     conn.request("GET", "/GetBalance", '', headers)
     res = conn.getresponse()
     data = json.loads(res.read())
+    
+    conn.close()
 
     # Check if status is good
     if (data["status"] != "OK"):
-        print(f"Error: could not get balance.\nStatus: {data['status']}")
-        exit()
+        print(f"ERROR: could not get balance.\nStatus: {data['status']}")
+        return -1
+    else:
+        return float(data["balance"])/10000
+
+def get_item_variable_data(hash_name: str) -> tuple:
+    """
+    Gets variable data for a single item by its hash name.
+    Returns a tuple with data organized like so:
+    (price_buy_list, price_sell_list, quantity_buy, quantity_sell, profit, roi, timestamp).
+    """
+    
+    conn = client.HTTPSConnection("market-proxy.gaijin.net")
+    payload = f"action=cln_books_brief&token={GM_TOKEN}&appid=1067&market_name={hash_name}"
+    headers = {'accept': 'application/json, text/javascript, */*; q=0.01', 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+    conn.request("POST", "/web", payload, headers)
+    res = conn.getresponse()
+    data = json.loads(res.read())
 
     conn.close()
 
-    return float(data["balance"])/10000
+    if (data['response']['success'] != True):
+        print("ERROR: Could not make request for item variable data.")
+        return ()
+    
+    try:
+        price_buy_list = data['response']['BUY']
+        price_sell_list = data['response']['SELL']
+        quantity_buy = data['response']['depth']['BUY']
+        quantity_sell = data['response']['depth']['SELL']
+        profit = round((0.85 * price_sell_list[0][0]/10000) - price_buy_list[0][0]/10000, 2)
+        roi = int((profit / price_buy_list[0][0]/10000) * 100)
+        timestamp = int(datetime.now().timestamp())
+        return (price_buy_list, price_sell_list, quantity_buy, quantity_sell, profit, roi, timestamp)
+
+    except:
+        print(f"ERROR: Could not get item variable data for hash name: {hash_name}")
+        return ()
 
 def get_items_static_data() -> list[tuple]:
     """
@@ -81,7 +115,7 @@ def get_items_static_data() -> list[tuple]:
                 ids_mapping.append((asset_id, name, hash_name))
 
             except:
-                print(f"Error: could not get market id: {asset_id, name, hash_name} at loop index {i*100 + j}")
+                print(f"ERROR: could not get market id: {asset_id, name, hash_name} at loop index {i*100 + j}")
                 continue
 
         skip += 100
@@ -107,6 +141,9 @@ def get_items_variable_data() -> list[tuple]:
         res = conn.getresponse()
         data = json.loads(res.read())
 
+        # Get timestamp once
+        timestamp = int(datetime.now().timestamp())
+
         # Iterate over each item in the request and add to list
         variable_data = []
         for j in range(count):
@@ -116,13 +153,12 @@ def get_items_variable_data() -> list[tuple]:
                 price_sell = data['response']['assets'][j]['price'] / 100000000
                 quantity_buy = data['response']['assets'][j]['depth']
                 quantity_sell = data['response']['assets'][j]['buy_depth']
-                profit = (0.85 * price_sell) - price_buy
-                roi = (profit / price_buy) * 100
-                timestamp = int(datetime.now().timestamp())
+                profit = round((0.85 * price_sell) - price_buy, 2)
+                roi = int((profit / price_buy) * 100)
                 variable_data.append((asset_id, price_buy, price_sell, quantity_buy, quantity_sell, profit, roi, timestamp))
 
             except:
-                print(f"Error: could not get market id: {asset_id} at loop index {i*100 + j}")
+                print(f"ERROR: could not get market id: {asset_id} at loop index {i*100 + j}")
                 continue
 
         skip += 100
@@ -157,7 +193,7 @@ def get_items_inventory_data() -> dict:
 
     # Check is status is good
     if (data["result"]["success"] != True):
-        print(f"Error: could not get inventory IDs.\nStatus: {data['result']['success']}")
+        print(f"ERROR: could not get inventory IDs.\nStatus: {data['result']['success']}")
         exit()
 
     conn.close()
@@ -190,7 +226,7 @@ def db_populate_items_inventory():
 
 #? Next steps:
 #? DONE - 1. Put static information into new database table (asset_id, name, hash_name)
-#? 2. Link that table to another table containing variable data
+#? DONE - 2. Link that table to another table containing variable data
 #?    (price_buy, price_sell, quantity_buy, quantity_sell, profit, roi, timestamp)
 #? 3. Add a tags table, link to asset_id from items_static
 #?    (should be populated along with db_populate_items_static simultanously)

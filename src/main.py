@@ -1,7 +1,7 @@
 # --- Imports
 import click
 import time
-from functions import get_balance, db_populate_items_static, db_populate_items_inventory, db_populate_items_variable
+from functions import get_balance, db_populate_items_static, db_populate_items_inventory, db_populate_items_variable, get_item_variable_data
 
 
 # --- Commands
@@ -32,5 +32,5 @@ def loop(run, delay):
 
 @main.command()
 def test():
-    db_populate_items_variable()
+    print(get_item_variable_data("id10030_sons_of_attila_key"))
     click.echo("Test completed")
