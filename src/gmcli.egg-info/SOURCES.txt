@@ -1,7 +1,0 @@
-setup.py
-gmcli.egg-info/PKG-INFO
-gmcli.egg-info/SOURCES.txt
-gmcli.egg-info/dependency_links.txt
-gmcli.egg-info/entry_points.txt
-gmcli.egg-info/requires.txt
-gmcli.egg-info/top_level.txt
