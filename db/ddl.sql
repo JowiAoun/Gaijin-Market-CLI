@@ -6,8 +6,8 @@ CREATE TABLE items_inventory (
 
 CREATE TABLE items_static (
     asset_id INT PRIMARY KEY,
-    name VARCHAR(80),
-    hash_name VARCHAR(80)
+    hash_name VARCHAR(80),
+    name VARCHAR(80)
 );
 
 CREATE TABLE items_variable (
