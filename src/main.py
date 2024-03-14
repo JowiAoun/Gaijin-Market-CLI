@@ -1,13 +1,15 @@
 # --- Imports
 import click
 import time
-from functions import get_balance, db_populate_items_static, db_populate_items_inventory, db_populate_items_variable, get_item_variable_data
+from functions import get_balance, db_populate_items_static, db_populate_items_inventory, cancel_order, db_populate_items_variable, get_item_variable_data, db_get_hash_by_id, get_open_orders
 
 
 # --- Commands
 @click.group()
 def main():
-    pass
+    click.echo("Test start...")
+    loop(True, 1000)
+    click.echo("Test completed")
 
 @main.command()
 def balance():
@@ -25,12 +27,16 @@ def inventory():
 @main.command()
 @click.option("--run", "-r", default=True, show_default=True, type=bool, help="Execute commands.")
 @click.option("--delay", "-d", default=5, show_default=True, type=int, help="The number of minutes to wait before executing loop again")
-def loop(run, delay):
-    while(run):
+def loop(run: bool, delay: int):
+    while run:
         click.echo(f"Currently running: {run}")
         time.sleep(delay) #? Multiply by 60 for minutes after testing
 
 @main.command()
 def test():
-    print(get_item_variable_data("id10030_sons_of_attila_key"))
+    click.echo("Test start...")
+    loop(True, 1000)
     click.echo("Test completed")
+
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,5 @@
 # --- Imports
-from setuptools import setup, find_packages;
+from setuptools import setup, find_packages
 
 # --- Setup
 setup(
@@ -9,9 +9,9 @@ setup(
     url="https://github.com/JowiAoun/Gaijin-Market-CLI",
     author="Jowi Aoun",
     packages=find_packages(),
-    install_requires=['click', 'mysql.connector', 'python-dotenv'],
+    install_requires=['click', 'mysql-connector-python', 'python-dotenv'],
     entry_points='''
     [console_scripts]
-    gmcli=main:main
+    gmcli=src.main:main
     ''',
 )

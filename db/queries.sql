@@ -6,3 +6,6 @@ INSERT INTO items_variable (asset_id, price_buy, price_sell, quantity_buy, quant
 
 -- # Querry 2
 INSERT INTO items_inventory (asset_id, class_ids, count) VALUES ({}, '{}', {})
+
+-- # Querry 3
+SELECT hash_name FROM items_static WHERE asset_id = {};
