@@ -1,7 +1,5 @@
 from datetime import datetime
 
-
-# --- Classes
 class Item:
   """
   Class representing an item from the Gaijin market.

@@ -12,6 +12,6 @@ setup(
     install_requires=['click', 'mysql-connector-python', 'python-dotenv'],
     entry_points='''
     [console_scripts]
-    gmcli=src.main:main
+    gmcli=DEPRECATEsrc.main:main
     ''',
 )
