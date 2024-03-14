@@ -10,5 +10,7 @@ Improvements:
   (should be populated along with db_populate_items_static simultaneously)
 - Write formal unit tests, and create one which does:
   - Opens an order for an item and cancels the order for the item (add delays and in-between checks)
+- Default value for functions (get_items_static_data, get_items_variable_data)
 - Add class docstrings
+- Put duplicated code in helper util directory
 - Start caching with database
