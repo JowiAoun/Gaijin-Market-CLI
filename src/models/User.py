@@ -1,14 +1,16 @@
-import GaijinMarket
-import Receipt
-import Item
+from src.models.GaijinMarket import GaijinMarket
+from src.models.Receipt import Receipt
+from src.models.Item import Item
 
 class User:
-  def __init__(self, token: str):
+  def __init__(self, token: str, settings: dict):
     self.token: str = token
-    self.balance: float = 0
+    self.id: int = -1
+    self.balance: float = -1
     self.inventory: list[Item] = []
     self.receipts: list[Receipt] = []
-    self.market: GaijinMarket = GaijinMarket.GaijinMarket(self.token)
+    self.settings: dict = settings
+    self.market: GaijinMarket = GaijinMarket(self.token)
 
   def get_balance(self) -> float:
     """
