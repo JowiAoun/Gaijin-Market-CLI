@@ -3,9 +3,10 @@
 
 
 Setup:
-1. Go into the `src` folder, and run `pip install --editable .`
-2. Run a MySQL database on a program specified port.
-3. Replace required secrets in `.env` based on required secrets from `.env-example`
+1. Execute `python -m venv venv`
+2. Execute `venv\Scripts\activate` on Windows, or `source venv/bin/activate` on Unix/MacOS
+3. Install the requirements with `pip install -r requirements.txt`
 
 Run:
-1. Use keyword 'gmcli' in terminal to show all commands.
+1. ~~Use keyword 'gmcli' in terminal to show all commands.~~
+2. Execute `python main.py`
