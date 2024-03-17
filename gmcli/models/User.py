@@ -1,10 +1,14 @@
-from src.models.GaijinMarket import GaijinMarket
-from src.models.Receipt import Receipt
-from src.models.Item import Item
+from .GaijinMarket import GaijinMarket
+from .Receipt import Receipt
+from .Item import Item
 
 class User:
-  def __init__(self, token: str, settings: dict):
-    self.token: str = token
+  def __init__(self, settings: dict):
+    self.token: str | None = settings.get('token', None)
+
+    if self.token in [None, ""]:
+      raise ValueError("NO TOKEN PROVIDED")
+
     self.id: int = -1
     self.balance: float = -1
     self.inventory: list[Item] = []
@@ -56,3 +60,6 @@ class User:
         return False
 
     return True
+
+  def set_token(self, token: str):
+    self.token = token

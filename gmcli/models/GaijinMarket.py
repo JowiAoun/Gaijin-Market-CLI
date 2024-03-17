@@ -2,7 +2,7 @@ import math
 from http import client
 import json
 from datetime import datetime
-from src.models.Receipt import Receipt
+from .Receipt import Receipt
 
 class GaijinMarket:
   def __init__(self, token: str):
