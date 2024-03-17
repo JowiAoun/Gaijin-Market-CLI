@@ -1,15 +1,7 @@
 # Gaijin-Market-CLI
-CLI tool for Gaijin Market. This tool allows easy communication with the Gaijin Market, caching to reduce API calls.
-The project can be also found [here](https://pypi.org/project/gmcli/), on PyPi.
+ CLI tool for Gaijin Market.
 
-PyPi instalation:
-1. Execute `pip install gmcli`
-
-Manual setup:
-1. Execute `python -m venv venv`
-2. Execute `venv\Scripts\activate` on Windows, or `source venv/bin/activate` on Unix/MacOS
-3. Install the requirements with `pip install -r requirements.txt`
-
-Run:
-1. ~~Use keyword 'gmcli' in terminal to show all commands.~~
-2. Execute `python main.py`
+Install & Run:
+1. This package can be installed with `pip install gmcli`
+2. To see commands, enter `gmcli --help`
+3. A Gaijin Market token is required for this to work. Get the token and register it with the command `gmcli set-token -t YOUR_TOKEN`.
