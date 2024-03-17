@@ -1,4 +1,5 @@
 Priority:
+- Complete migration of rudimentary click view
 - Re-design approach to saving items, and if REDIS should be used instead with hash_name
     - First, focus on the most basic operations (buy, sell, get prices, update prices, etc.)
     - When complete, use this package to expand on it
