@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 # --- Setup
 setup(
     name="gmcli",
-    version="0.0.0",
+    version="0.0.1",
     description="CLI to interact with the Gaijin Market.",
     url="https://github.com/JowiAoun/Gaijin-Market-CLI",
     author="Jowi Aoun",
