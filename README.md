@@ -3,7 +3,7 @@ CLI tool for Gaijin Market. This tool allows easy communication with the Gaijin 
 The project can be also found [here](https://pypi.org/project/gmcli/), on PyPi.
 
 PyPi instalation:
-1. Execture `pip install gmcli`
+1. Execute `pip install gmcli`
 
 Manual setup:
 1. Execute `python -m venv venv`
