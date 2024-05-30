@@ -1,20 +1,17 @@
-from .GaijinMarket import GaijinMarket
-from .Receipt import Receipt
-from .Item import Item
+from pydantic import BaseModel
 
-class User:
-  def __init__(self, settings: dict):
-    self.token: str | None = settings.get('token', None)
+from gmcli.models.GaijinMarket import GaijinMarket
+from gmcli.models.Receipt import Receipt
+from gmcli.models.Item import Item
 
-    if self.token in [None, ""]:
-      raise ValueError("NO TOKEN PROVIDED")
-
-    self.id: int = -1
-    self.balance: float = -1
-    self.inventory: list[Item] = []
-    self.receipts: list[Receipt] = []
-    self.settings: dict = settings
-    self.market: GaijinMarket = GaijinMarket(self.token)
+class User(BaseModel):
+  token: str = ""
+  id: int = -1
+  balance: float = -1
+  inventory: list[Item] = []
+  receipts: list[Receipt] = []
+  settings: dict = {}
+  market: GaijinMarket = GaijinMarket(token=token)
 
   def get_balance(self) -> float:
     """

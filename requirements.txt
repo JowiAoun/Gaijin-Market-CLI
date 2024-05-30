@@ -3,3 +3,4 @@ wheel==0.43.0
 twine==5.0.0
 python-dotenv==1.0.1
 click==8.1.7
+pydantic==2.7.2

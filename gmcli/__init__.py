@@ -1,1 +1,1 @@
-from .main import main
+from gmcli.main import main

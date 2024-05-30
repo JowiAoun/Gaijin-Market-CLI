@@ -1,14 +1,14 @@
 import math
+from pydantic import BaseModel
 from http import client
 import json
 from datetime import datetime
-from .Receipt import Receipt
+from gmcli.models.Receipt import Receipt
 
-class GaijinMarket:
-  def __init__(self, token: str):
-    self.token: str = token
-    self.conn_market: client.HTTPSConnection = client.HTTPSConnection("market-proxy.gaijin.net")
-    self.conn_wallet: client.HTTPSConnection = client.HTTPSConnection("wallet.gaijin.net")
+class GaijinMarket(BaseModel):
+  token: str
+  conn_market: client.HTTPSConnection = client.HTTPSConnection("market-proxy.gaijin.net")
+  conn_wallet: client.HTTPSConnection = client.HTTPSConnection("wallet.gaijin.net")
 
   def get_balance(self) -> float:
     headers = {'Authorization': f'BEARER {self.token}'}
@@ -208,6 +208,6 @@ class GaijinMarket:
       return True
 
   def close_connection(self):
-    self.token = None
+    self.token = ""
     self.conn_wallet.close()
     self.conn_market.close()
