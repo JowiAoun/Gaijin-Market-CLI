@@ -23,6 +23,13 @@ class User:
 
     return self.market.get_balance()
 
+  def get_inventory(self) -> dict:
+    """
+    Gets the balance of the user. If successful, returns a float.
+    """
+
+    return self.market.get_inventory()
+
   def get_open_orders(self) -> list[tuple]:
     """
     Gets current open orders. Returns a list of tuples with data organized like so:
