@@ -1,5 +1,6 @@
 /gmcli/__pycache__
 /gmcli.egg-info
+/gmcli/users
 
 .env
 
