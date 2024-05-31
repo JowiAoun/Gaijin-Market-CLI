@@ -1,32 +1,32 @@
 import math
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
 from http import client
 import json
 from datetime import datetime
 from gmcli.models.Receipt import Receipt
 
 class GaijinMarket(BaseModel):
-  token: str
-  conn_market: client.HTTPSConnection = client.HTTPSConnection("market-proxy.gaijin.net")
-  conn_wallet: client.HTTPSConnection = client.HTTPSConnection("wallet.gaijin.net")
+  _conn_market: client.HTTPSConnection = PrivateAttr(
+    default_factory=lambda: client.HTTPSConnection("market-proxy.gaijin.net"))
+  _conn_wallet: client.HTTPSConnection = PrivateAttr(
+    default_factory=lambda: client.HTTPSConnection("wallet.gaijin.net"))
 
-  def get_balance(self) -> float:
-    headers = {'Authorization': f'BEARER {self.token}'}
-    self.conn_wallet.request("GET", "/GetBalance", '', headers)
-    res = self.conn_wallet.getresponse()
+  def get_balance(self, token: str) -> float:
+    headers = {'Authorization': f'BEARER {token}'}
+    self._conn_wallet.request("GET", "/GetBalance", '', headers)
+    res = self._conn_wallet.getresponse()
     data = json.loads(res.read())
 
     if data["status"] != "OK":
-      print(f"ERROR: could not get balance.\nStatus: {data['status']}")
       return -1
     else:
       return float(data["balance"]) / 10000
 
-  def get_open_orders(self) -> list[tuple]:
-    payload = f"action=cln_get_user_open_orders&token={self.token}&appid=1165"
+  def get_open_orders(self, token: str) -> list[tuple]:
+    payload = f"action=cln_get_user_open_orders&token={token}&appid=1165"
     headers = {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
-    self.conn_market.request("POST", "/web", payload, headers)
-    res = self.conn_market.getresponse()
+    self._conn_market.request("POST", "/web", payload, headers)
+    res = self._conn_market.getresponse()
     data = json.loads(res.read())
 
     open_orders = []
@@ -45,7 +45,7 @@ class GaijinMarket(BaseModel):
 
     return open_orders
 
-  def get_inventory(self) -> dict:
+  def get_inventory(self, token: str) -> dict:
     """
     Returns a dictionary in key-value form,
     where the 'item_id' is the static ID of the item,
@@ -53,10 +53,10 @@ class GaijinMarket(BaseModel):
     The 'class_id' changes after transactions are done with it.
     """
 
-    payload = f"action=GetContextContents&token={self.token}&appid=1067&contextid=1"
+    payload = f"action=GetContextContents&token={token}&appid=1067&contextid=1"
     headers = {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
-    self.conn_market.request("POST", "/assetAPI", payload, headers)
-    _res = self.conn_market.getresponse()
+    self._conn_market.request("POST", "/assetAPI", payload, headers)
+    _res = self._conn_market.getresponse()
     res = json.loads(_res.read())
 
     data = {}
@@ -73,18 +73,18 @@ class GaijinMarket(BaseModel):
 
     return data
 
-  def get_item_variable(self, hash_name: str) -> tuple:
+  def get_item_variable(self, token: str, hash_name: str) -> tuple:
     """
     Gets variable data for a single item by its hash name.
     Returns a tuple with data organized like so:
     (price_buy_list, price_sell_list, quantity_buy, quantity_sell, profit, roi, timestamp).
     """
 
-    payload = f"action=cln_books_brief&token={self.token}&appid=1067&market_name={hash_name}"
+    payload = f"action=cln_books_brief&token={token}&appid=1067&market_name={hash_name}"
     headers = {'accept': 'application/json, text/javascript, */*; q=0.01',
                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
-    self.conn_market.request("POST", "/web", payload, headers)
-    res = self.conn_market.getresponse()
+    self._conn_market.request("POST", "/web", payload, headers)
+    res = self._conn_market.getresponse()
     data = json.loads(res.read())
 
     if not data['response']['success']:
@@ -105,7 +105,7 @@ class GaijinMarket(BaseModel):
       print(f"ERROR: Could not get item variable data for hash name: {hash_name}")
       return ()
 
-  def get_items_static(self, count: int) -> list[tuple]:
+  def get_items_static(self, token: str, count: int) -> list[tuple]:
     """
     Returns a list of tuples containing static data in the order:
     (asset_id, name, hash_name).
@@ -118,10 +118,10 @@ class GaijinMarket(BaseModel):
     for _ in range(num_requests):
       curr_count = min(100, count)
 
-      payload = f"action=cln_market_search&token={self.token}&appid=1165&skip={skip}&count={curr_count}&text=&language=en_US&options=any_sell_orders&appid_filter=1067"
+      payload = f"action=cln_market_search&token={token}&appid=1165&skip={skip}&count={curr_count}&text=&language=en_US&options=any_sell_orders&appid_filter=1067"
       headers = {'content-type': "application/x-www-form-urlencoded; charset=UTF-8"}
-      self.conn_market.request("GET", "/web", payload, headers)
-      res = self.conn_market.getresponse()
+      self._conn_market.request("GET", "/web", payload, headers)
+      res = self._conn_market.getresponse()
       data = json.loads(res.read())
 
       if data['response']['error'] == "LIMIT_IS_EXCEEDED":
@@ -146,7 +146,7 @@ class GaijinMarket(BaseModel):
 
     return data
 
-  def get_items_variable(self, count: int) -> list[tuple]:
+  def get_items_variable(self, token: str, count: int) -> list[tuple]:
     """
     Gets variable data for a single item by its hash name.
     Returns a tuple with data organized like so:
@@ -161,10 +161,10 @@ class GaijinMarket(BaseModel):
     for _ in range(num_requests):
       curr_count = min(100, count)
 
-      payload = f"action=cln_market_search&token={self.token}&appid=1165&skip={skip}&count={curr_count}&text=&language=en_US&options=any_sell_orders&appid_filter=1067"
+      payload = f"action=cln_market_search&token={token}&appid=1165&skip={skip}&count={curr_count}&text=&language=en_US&options=any_sell_orders&appid_filter=1067"
       headers = {'content-type': "application/x-www-form-urlencoded; charset=UTF-8"}
-      self.conn_market.request("GET", "/web", payload, headers)
-      res = self.conn_market.getresponse()
+      self._conn_market.request("GET", "/web", payload, headers)
+      res = self._conn_market.getresponse()
       data = json.loads(res.read())
 
       if data['response']['error'] == "LIMIT_IS_EXCEEDED":
@@ -193,13 +193,13 @@ class GaijinMarket(BaseModel):
 
     return data
 
-  def cancel_order(self, receipt: Receipt) -> bool:
+  def cancel_order(self, token: str, receipt: Receipt) -> bool:
     timestamp = datetime.now().timestamp()
-    payload = f"action=cancel_order&token={self.token}&appid=1165&transactid={receipt.transact_id}&reqstamp={timestamp}&pairId={receipt.pair_id}&orderId={receipt.order_id}"
+    payload = f"action=cancel_order&token={token}&appid=1165&transactid={receipt.transact_id}&reqstamp={timestamp}&pairId={receipt.pair_id}&orderId={receipt.order_id}"
     headers = {'accept': 'application/json, text/javascript, */*; q=0.01', 'accept-language': 'en-CA,en;q=0.8',
                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
-    self.conn_market.request("POST", "/market", payload, headers)
-    res = self.conn_market.getresponse()
+    self._conn_market.request("POST", "/market", payload, headers)
+    res = self._conn_market.getresponse()
     data = json.loads(res.read())
 
     if not data["response"]["success"]:
@@ -208,6 +208,5 @@ class GaijinMarket(BaseModel):
       return True
 
   def close_connection(self):
-    self.token = ""
-    self.conn_wallet.close()
-    self.conn_market.close()
+    self._conn_wallet.close()
+    self._conn_market.close()

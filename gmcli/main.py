@@ -1,34 +1,27 @@
 from gmcli.models.User import User
-import json
 import click
 
-settings: dict = {}
-user = User(settings=settings)
-
-# try:
-#   settings = json.load(open('./gmcli/settings.json', 'r'))
-# except ValueError as err:
-#   click.echo(
-#     "Error: could not retrieve Gaijin Market token."
-#     "\nPlease provide a token with the command 'gmcli set-token -t ey...'")
-#   exit(1)
+user = User(id=1)
 
 @click.group()
 def main():
-  print("AAAAAAAAAAAAAAAAAAAAAAAAAA")
   pass
 
 @main.command()
 @click.option("--embed", "-e", is_flag=True, default=False, show_default=True, type=bool, help="Embed balance in the form: 'Balance: $1.23'")
 def balance(embed: bool):
   """
-  Prints the balance in the form: '1.23',
-  else print in the form: 'Balance: $1.23'
+  Prints the balance in the form: '1.23'
   """
+  bal = user.get_balance()
+  if bal == -1:
+    click.echo(f"Error: could not get balance.")
+    return
+
   if embed:
-    click.echo(f"Balance: ${user.get_balance()}")
+    click.echo(f"Balance: ${bal}")
   else:
-    click.echo(user.get_balance())
+    click.echo(bal)
 
 @main.command()
 @click.option("--embed", "-e", is_flag=True, default=False, show_default=True, type=bool, help="Embed balance in the form: 'Balance: $1.23'")
@@ -43,14 +36,15 @@ def inventory(embed: bool):
 
 @main.command()
 @click.option("--token", "-t", default=None, type=str, help="New token to use for market interactions")
-def set_token(token: str | None):
+def set_token(token: str):
+  """
+  Sets the token for the user
+  """
   if token is None:
     click.echo("Error: could not set token. Please provide a valid Gaijin Market token.")
     return
 
-  settings['token'] = token
-  with open('./gmcli/settings.json', 'w') as f:
-    json.dump(settings, f)
+  user.set_token(token)
   click.echo("New token has been set")
 
 if __name__ == "__main__":

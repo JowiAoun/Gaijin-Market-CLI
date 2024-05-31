@@ -1,5 +1,6 @@
 Next issue:
 - Deal with null tokens, and clear terminal after set-token
+- Change settings to BaseModel with own methods to CRUD settings data
 
 Priority:
 - Implement all basic commands
