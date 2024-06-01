@@ -1,24 +1,19 @@
+from pydantic import BaseModel, Field
+
 import os
 import json
 
-from pydantic import BaseModel, Field
-
 from gmcli.models.Receipt import Receipt
-from gmcli.models.Item import Item
+from gmcli.models.GaijinMarketSettings import GaijinMarketSettings
+from gmcli.models.UserMarketCache import UserMarketCache
 from gmcli.models.GaijinMarket import GaijinMarket
 
 
 class User(BaseModel):
-  id: int = -1
-  token: str = ""
-  balance: float = -1
-  inventory: list[Item] = []
-  receipts: list[Receipt] = []
-  settings: dict = {}
+  id: int = None
+  cache: UserMarketCache = Field(default_factory=lambda: UserMarketCache())
   market: GaijinMarket = Field(default_factory=lambda: GaijinMarket())
-
-  class Config:
-    arbitrary_types_allowed = True
+  market_settings: GaijinMarketSettings = Field(default_factory=lambda: GaijinMarketSettings())
 
   def __init__(self, **data):
       super().__init__(**data)
@@ -27,19 +22,24 @@ class User(BaseModel):
   def get_balance(self) -> float:
     """
     Gets the balance of the user. If successful, returns a float.
+    If unsuccessful, returns -1.
     """
 
-    bal = self.market.get_balance(self.token)
-    self.balance = bal
+    new_balance = self.market.get_balance(self.cache.get_token())
+
+    if new_balance == -1:
+      return new_balance
+
+    self.cache.set_balance(new_balance)
     self.save()
-    return bal
+    return new_balance
 
   def get_inventory(self) -> dict:
     """
     Gets the balance of the user. If successful, returns a float.
     """
 
-    return self.market.get_inventory(self.token)
+    return self.market.get_inventory(self.cache.get_token())
 
   def get_open_orders(self) -> list[tuple]:
     """
@@ -47,7 +47,7 @@ class User(BaseModel):
     (transact_id, order_id, pair_id, hash_name, type, price, amount, timestamp)
     """
 
-    return self.market.get_open_orders(self.token)
+    return self.market.get_open_orders(self.cache.get_token())
 
   def create_order(self):
     """
@@ -59,7 +59,7 @@ class User(BaseModel):
     Cancels the user's open order using the item's receipt.
     """
 
-    return self.market.cancel_order(self.token, receipt)
+    return self.market.cancel_order(self.cache.get_token(), receipt)
 
   def cancel_orders(self, receipts: list[Receipt]) -> bool:
     """
@@ -80,7 +80,11 @@ class User(BaseModel):
     return True
 
   def set_token(self, token: str):
-    self.token = token
+    self.cache.set_token(token)
+    self.save()
+
+  def set_market_settings(self, market_settings: GaijinMarketSettings):
+    self.market_settings = market_settings
     self.save()
 
   def save(self):
@@ -93,10 +97,18 @@ class User(BaseModel):
   def load_from_file_if_exists(self):
     """
     Loads the user's attributes from a JSON file if it exists.
+    Returns true if file exists, else false
     """
     filename: str = f"./gmcli/users/{self.id}.json"
-    if (self.id != -1) and (os.path.exists(filename)):
+
+    if (self.id is not None) and (os.path.exists(filename)):
       with open(filename, 'r') as f:
         data = json.load(f)
-      for key, value in data.items():
-        setattr(self, key, value)
+
+      # Convert dictionaries to models
+      if 'cache' in data and isinstance(data['cache'], dict):
+        data['cache'] = UserMarketCache.parse_obj(data['cache'])
+      if 'market_settings' in data and isinstance(data['market_settings'], dict):
+        data['market_settings'] = GaijinMarketSettings.parse_obj(data['market_settings'])
+
+      self.__dict__.update(data)
