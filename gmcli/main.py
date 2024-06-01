@@ -1,3 +1,4 @@
+from gmcli.models.GaijinMarketSettings import SettingsKey
 from gmcli.models.User import User
 import click
 
@@ -31,9 +32,6 @@ def inventory(embed: bool):
   else:
     click.echo(user.get_inventory())
 
-  click.echo(user.get_inventory())
-
-
 @main.command()
 @click.option("--token", "-t", default=None, type=str, help="New token to use for market interactions")
 def set_token(token: str):
@@ -45,7 +43,7 @@ def set_token(token: str):
     return
 
   user.set_token(token)
-  click.echo("New token has been set")
+  click.echo("Success: New token has been set")
 
 if __name__ == "__main__":
   main()
