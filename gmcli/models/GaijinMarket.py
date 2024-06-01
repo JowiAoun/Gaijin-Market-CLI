@@ -11,7 +11,12 @@ class GaijinMarket(BaseModel):
   _conn_wallet: client.HTTPSConnection = PrivateAttr(
     default_factory=lambda: client.HTTPSConnection("wallet.gaijin.net"))
 
+  # TODO: Implement GaijinMarketCache with the same process as User saved to /users
+
   def get_balance(self, token: str) -> float:
+    if token is None:
+      return -1
+
     headers = {'Authorization': f'BEARER {token}'}
     self._conn_wallet.request("GET", "/GetBalance", '', headers)
     res = self._conn_wallet.getresponse()
