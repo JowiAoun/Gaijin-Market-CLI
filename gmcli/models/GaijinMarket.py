@@ -4,6 +4,7 @@ from http import client
 import json
 from datetime import datetime
 from gmcli.models.Receipt import Receipt
+from gmcli.models.Item import Item
 
 class GaijinMarket(BaseModel):
   _conn_market: client.HTTPSConnection = PrivateAttr(
@@ -50,7 +51,7 @@ class GaijinMarket(BaseModel):
 
     return open_orders
 
-  def get_inventory(self, token: str) -> dict:
+  def get_inventory_ids(self, token: str) -> dict[int, list[int]]:
     """
     Returns a dictionary in key-value form,
     where the 'item_id' is the static ID of the item,
@@ -64,19 +65,54 @@ class GaijinMarket(BaseModel):
     _res = self._conn_market.getresponse()
     res = json.loads(_res.read())
 
+    if not res["result"]["success"]:
+      print(f"ERROR: could not get inventory IDs.")
+      return {}
+
     data = {}
     for item in res["result"]["assets"]:
       class_value = item["class"][0]["value"]
-      if class_value in data:
-        data[class_value].append(int(item["id"]))
-      else:
-        data[class_value] = int(item["id"])
+      id = int(item["id"])
 
-    if not res["result"]["success"]:
-      print(f"ERROR: could not get inventory IDs.\nStatus: {data['result']['success']}")
-      return {}
+      if class_value in data:
+        data[class_value].append(id)
+      else:
+        data[class_value] = [id]
 
     return data
+
+  # def get_inventory_items(self, token: str):
+  #   item_ids = self.get_inventory_ids(token)
+  #
+  #   test = self.get_item_static(token, 1)
+  #
+  #   for cvalue, id in item_ids.items():
+  #     pass
+
+  def get_item_static(self, token, cvalue: int):
+    payload = f"action=GetAssetClassInfo&token={token}&appid=1067&language=en_US&class_name0=__itemdefid&class_value0={cvalue}&class_count=1"
+    headers = {'accept': 'application/json, text/javascript, */*; q=0.01',
+               'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+    self._conn_market.request("POST", "/web", payload, headers)
+    res = self._conn_market.getresponse()
+    data = json.loads(res.read())
+
+    if 'response' in data:
+      if not data['response']['success']:
+        print("ERROR: Could not get item static data for cvalue:", cvalue)
+        return
+
+    data_asset = data['result']['asset']
+
+    try:
+      # TODO: Next steps
+      description = data_asset['descriptions']['value']
+
+    except:
+      print("ERROR: Could not get item static data for cvalue:", cvalue)
+      return
+
+    return Item()
 
   def get_item_variable(self, token: str, hash_name: str) -> tuple:
     """
@@ -110,9 +146,9 @@ class GaijinMarket(BaseModel):
       print(f"ERROR: Could not get item variable data for hash name: {hash_name}")
       return ()
 
-  def get_items_static(self, token: str, count: int) -> list[tuple]:
+  def get_market_items(self, token: str, count: int) -> list[tuple]:
     """
-    Returns a list of tuples containing static data in the order:
+    Returns a list of tuples from the market containing static data in the order:
     (asset_id, name, hash_name).
     """
 
@@ -127,22 +163,20 @@ class GaijinMarket(BaseModel):
       headers = {'content-type': "application/x-www-form-urlencoded; charset=UTF-8"}
       self._conn_market.request("GET", "/web", payload, headers)
       res = self._conn_market.getresponse()
-      data = json.loads(res.read())
+      raw = json.loads(res.read())
 
-      if data['response']['error'] == "LIMIT_IS_EXCEEDED":
-        break
-      elif not data['response']['success']:
+      if not raw['response']['success']:
         continue
 
       for j in range(count):
         try:
-          asset_id = int(data['response']['assets'][j]["asset_class"][0]["value"])
-          name = data['response']['assets'][j]['name']
-          hash_name = data['response']['assets'][j]['hash_name']
+          asset_id = int(raw['response']['assets'][j]["asset_class"][0]["value"])
+          name = raw['response']['assets'][j]['name']
+          hash_name = raw['response']['assets'][j]['hash_name']
           data.append((asset_id, name, hash_name))
 
         except Exception as err:
-          print(f"ERROR: could not get market id: {asset_id} at loop index UNKNOWN")
+          print(f"ERROR: could not get market id: {asset_id} at loop index {j}")
           print(err)
           continue
 
