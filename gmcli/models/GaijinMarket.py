@@ -105,14 +105,21 @@ class GaijinMarket(BaseModel):
     data_asset = data['result']['asset']
 
     try:
-      # TODO: Next steps
-      description = data_asset['descriptions']['value']
+      name = data_asset['market_name']
+      hash_name = data_asset['market_hash_name']
+      description = data_asset['descriptions'][0]['value']
+      marketable = data_asset['marketable']
 
     except:
       print("ERROR: Could not get item static data for cvalue:", cvalue)
       return
 
-    return Item()
+    return Item(
+      name=name,
+      hash_name=hash_name,
+      description=description,
+      marketable=marketable
+    )
 
   def get_item_variable(self, token: str, hash_name: str) -> tuple:
     """
