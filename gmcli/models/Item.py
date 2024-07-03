@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from gmcli.models.TagCollection import TagCollection
+from gmcli.models.Tag import Tag
+
 
 class Item(BaseModel):
   """
@@ -13,8 +16,12 @@ class Item(BaseModel):
   price_sell: float = None
   quantity_buy: int = None
   quantity_sell: int = None
-  tags: dict = {}
+  marketable: bool = None
+  tags: TagCollection = Field(default_factory=lambda: TagCollection())
   timestamp: int = Field(default_factory=lambda: int(datetime.now().timestamp()))
+
+  class Config:
+    arbitrary_types_allowed = True
 
   @property
   def profit(self) -> float:
@@ -24,4 +31,4 @@ class Item(BaseModel):
     return int((self.profit / self.price_buy) * 100)
 
   def __str__(self):
-    return f"Item with id {self.id} and asset_id {self.cvalue}"
+    return f"Item with id {self.id} and asset_id {self.cvalue} and tags [{self.tags}]"
