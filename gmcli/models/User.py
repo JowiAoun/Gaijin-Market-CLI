@@ -39,8 +39,13 @@ class User(BaseModel):
     Gets the balance of the user. If successful, returns a float.
     """
 
-    return self.market.get_item_static(self.cache.get_token(), 100124222)
-    # return self.market.get_inventory_ids(self.cache.get_token())
+    return self.market.get_inventory_ids(self.cache.get_token())
+
+  def dev_test(self):
+    """
+    Development testing command
+    """
+    return self.market.get_item_static(self.cache.get_token(), 100124)
 
   def get_open_orders(self) -> list[tuple]:
     """

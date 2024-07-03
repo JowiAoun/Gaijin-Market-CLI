@@ -45,5 +45,12 @@ def set_token(token: str):
   user.set_token(token)
   click.echo("Success: New token has been set")
 
+@main.command()
+def dev_test():
+  """
+  Development testing command
+  """
+  click.echo(user.dev_test())
+
 if __name__ == "__main__":
   main()
