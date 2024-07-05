@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-from gmcli.models.Receipt import Receipt
-from gmcli.models.Item import Item
+from gmcli.models.items.transactions.Receipt import Receipt
+from gmcli.models.items.Item import Item
 
 
 class UserMarketCache(BaseModel):

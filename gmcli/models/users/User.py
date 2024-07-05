@@ -3,10 +3,10 @@ from pydantic import BaseModel, Field
 import os
 import json
 
-from gmcli.models.Receipt import Receipt
-from gmcli.models.GaijinMarketSettings import GaijinMarketSettings
-from gmcli.models.UserMarketCache import UserMarketCache
-from gmcli.models.GaijinMarket import GaijinMarket
+from gmcli.models.items.transactions.Receipt import Receipt
+from gmcli.models.gaijinMarket.GaijinMarketSettings import GaijinMarketSettings
+from gmcli.models.users.UserMarketCache import UserMarketCache
+from gmcli.models.gaijinMarket.GaijinMarket import GaijinMarket
 
 
 class User(BaseModel):

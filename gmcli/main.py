@@ -1,5 +1,4 @@
-from gmcli.models.GaijinMarketSettings import SettingsKey
-from gmcli.models.User import User
+from gmcli.models.users.User import User
 import click
 
 user = User(id=1)
@@ -50,7 +49,7 @@ def dev_test():
   """
   Development testing command
   """
-  click.echo(user.dev_test())
+  user.dev_test()
 
 if __name__ == "__main__":
   main()

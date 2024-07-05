@@ -9,3 +9,9 @@ Install & Run:
 Development:
 1. Install editable package locally with `pip install -e .`
 2. Use `gmcli` keyword in terminal
+
+
+
+Implements:
+- Service layers
+- Factories

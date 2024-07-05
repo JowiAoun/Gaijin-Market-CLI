@@ -3,8 +3,10 @@ from pydantic import BaseModel, PrivateAttr
 from http import client
 import json
 from datetime import datetime
-from gmcli.models.Receipt import Receipt
-from gmcli.models.Item import Item
+from gmcli.models.items.transactions.Receipt import Receipt
+from gmcli.models.items.Item import Item
+from gmcli.utils.tag import toTagCollection
+
 
 class GaijinMarket(BaseModel):
   _conn_market: client.HTTPSConnection = PrivateAttr(
@@ -104,15 +106,18 @@ class GaijinMarket(BaseModel):
 
     data_asset = data['result']['asset']
 
-    try:
-      name = data_asset['market_name']
-      hash_name = data_asset['market_hash_name']
-      description = data_asset['descriptions'][0]['value']
-      marketable = data_asset['marketable']
+    # try:
+    name = data_asset['market_name']
+    hash_name = data_asset['market_hash_name']
+    description = data_asset['descriptions'][0]['value']
+    marketable = data_asset['marketable']
+    tags = toTagCollection(data_asset['tags'])
 
-    except:
-      print("ERROR: Could not get item static data for cvalue:", cvalue)
-      return
+    print(tags)
+
+    # except:
+    #   print("ERROR: Could not get item static data for cvalue:", cvalue)
+    #   return
 
     return Item(
       name=name,

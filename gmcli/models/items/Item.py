@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from gmcli.models.TagCollection import TagCollection
-from gmcli.models.Tag import Tag
+from gmcli.models.items.tags.TagCollection import TagCollection
 
 
 class Item(BaseModel):
